@@ -1,6 +1,7 @@
 package tts
 
 import (
+	b64 "encoding/base64"
 	"encoding/json"
 	"fmt"
 	"go.thethings.network/lorawan-stack/v3/pkg/jsonpb"
@@ -11,30 +12,25 @@ import (
 	"wcrwg-iot-ingress/pkg/utils"
 )
 
-func AddParsedPayloadFields(packetIn ttnpb.ApplicationUp, packetOut *types.IotMessage) error {
-	// DecodedPayload is &Struct{Fields:map[string]*Value{},XXX_unrecognized:[],}.
-	// Convert to a more standard map[string]interface{}
+func UplinkToSensorMessage(packetIn ttnpb.ApplicationUp) (types.IotMessage, error) {
+	var sensorMessage types.IotMessage
+	sensorMessage.Measurement = "sensor"
 
-	// Marshal struct to json
-	marshaler := jsonpb.TTN()
-	decodedJson, err := marshaler.Marshal(packetIn.GetUplinkMessage().DecodedPayload)
-	if err != nil {
-		return err
+	// Add metadata fields
+	AddNetworkMetadataFields(packetIn, &sensorMessage)
+
+	// Store the raw payload too
+	sensorMessage.AddField("frm_payload", b64.StdEncoding.EncodeToString(packetIn.GetUplinkMessage().FrmPayload))
+
+	// Add payload fields, and
+	// 3. If payload fields are available, try getting coordinates from there
+	if packetIn.GetUplinkMessage().DecodedPayload != nil {
+		if err := AddParsedPayloadFields(packetIn, &sensorMessage); err != nil {
+			return sensorMessage, err
+		}
 	}
 
-	// Unmarshal json to interface{}
-	var decodedInterface map[string]interface{}
-	err = json.Unmarshal(decodedJson, &decodedInterface)
-	if err != nil {
-		return err
-	}
-
-	// For each field in the decoded payload, add to IotMessage
-	for key, val := range decodedInterface {
-		packetOut.AddField(key, val)
-	}
-
-	return nil
+	return sensorMessage, nil
 }
 
 func AddNetworkMetadataFields(packetIn ttnpb.ApplicationUp, packetOut *types.IotMessage) {
@@ -72,11 +68,11 @@ func AddNetworkMetadataFields(packetIn ttnpb.ApplicationUp, packetOut *types.Iot
 			utils.NetIdToString(packetIn.GetUplinkMessage().GetNetworkIds().NetId),
 	)
 
-	packetOut.AddTag(constants.AppId, packetIn.GetEndDeviceIds().ApplicationIds.ApplicationId)
-	packetOut.AddTag(constants.DevId, packetIn.GetEndDeviceIds().DeviceId)
+	packetOut.AddTag(constants.ApplicationId, packetIn.GetEndDeviceIds().ApplicationIds.ApplicationId)
+	packetOut.AddTag(constants.DeviceId, packetIn.GetEndDeviceIds().DeviceId)
 
 	if packetIn.GetEndDeviceIds().DevEui != nil {
-		packetOut.AddTag(constants.DevEui, fmt.Sprintf("%016X", packetIn.GetEndDeviceIds().DevEui))
+		packetOut.AddTag(constants.DeviceEui, fmt.Sprintf("%016X", packetIn.GetEndDeviceIds().DevEui))
 	}
 
 	/*
@@ -85,8 +81,8 @@ func AddNetworkMetadataFields(packetIn ttnpb.ApplicationUp, packetOut *types.Iot
 	            "f_port":1,
 	            "f_cnt":527,
 	*/
-	packetOut.AddField(constants.FPort, uint8(packetIn.GetUplinkMessage().FPort))
-	packetOut.AddField(constants.FCnt, int64(packetIn.GetUplinkMessage().FCnt))
+	packetOut.AddField(constants.FPort, packetIn.GetUplinkMessage().FPort)
+	packetOut.AddField(constants.FCnt, packetIn.GetUplinkMessage().FCnt)
 
 	/*
 	   V3
@@ -108,18 +104,18 @@ func AddNetworkMetadataFields(packetIn ttnpb.ApplicationUp, packetOut *types.Iot
 	if packetIn.GetUplinkMessage().Settings.DataRate.GetLora() != nil {
 		//log.Println("Is LORA")
 		packetOut.AddField(constants.Modulation, "LORA")
-		packetOut.AddField(constants.SpreadingFactor, uint8(packetIn.GetUplinkMessage().Settings.DataRate.GetLora().SpreadingFactor))
-		packetOut.AddField(constants.Bandwidth, uint64(packetIn.GetUplinkMessage().Settings.DataRate.GetLora().Bandwidth))
+		packetOut.AddField(constants.SpreadingFactor, packetIn.GetUplinkMessage().Settings.DataRate.GetLora().SpreadingFactor)
+		packetOut.AddField(constants.Bandwidth, packetIn.GetUplinkMessage().Settings.DataRate.GetLora().Bandwidth)
 		packetOut.AddField(constants.CodingRate, packetIn.GetUplinkMessage().Settings.DataRate.GetLora().CodingRate)
 	}
 	if packetIn.GetUplinkMessage().Settings.DataRate.GetFsk() != nil {
 		//log.Println("Is FSK")
 		packetOut.AddField(constants.Modulation, "FSK")
-		packetOut.AddField(constants.Bitrate, uint64(packetIn.GetUplinkMessage().Settings.DataRate.GetFsk().BitRate))
+		packetOut.AddField(constants.Bitrate, packetIn.GetUplinkMessage().Settings.DataRate.GetFsk().BitRate)
 	}
 	if packetIn.GetUplinkMessage().Settings.DataRate.GetLrfhss() != nil {
 		packetOut.AddField(constants.Modulation, "LR_FHSS")
-		packetOut.AddField(constants.Bandwidth, uint64(packetIn.GetUplinkMessage().Settings.DataRate.GetLrfhss().GetOperatingChannelWidth()))
+		packetOut.AddField(constants.Bandwidth, packetIn.GetUplinkMessage().Settings.DataRate.GetLrfhss().GetOperatingChannelWidth())
 		packetOut.AddField(constants.CodingRate, packetIn.GetUplinkMessage().Settings.DataRate.GetLrfhss().CodingRate)
 		// TODO: grid steps, code rate
 	}
@@ -128,8 +124,8 @@ func AddNetworkMetadataFields(packetIn ttnpb.ApplicationUp, packetOut *types.Iot
 	if packetIn.GetUplinkMessage().Locations["user"] != nil {
 		packetOut.AddField(constants.Latitude, packetIn.GetUplinkMessage().Locations["user"].Latitude)
 		packetOut.AddField(constants.Longitude, packetIn.GetUplinkMessage().Locations["user"].Longitude)
-		packetOut.AddField(constants.Altitude, float64(packetIn.GetUplinkMessage().Locations["user"].Altitude))
-		packetOut.AddField(constants.LocationAccuracy, float64(packetIn.GetUplinkMessage().Locations["user"].Accuracy))
+		packetOut.AddField(constants.Altitude, packetIn.GetUplinkMessage().Locations["user"].Altitude)
+		packetOut.AddField(constants.LocationAccuracy, packetIn.GetUplinkMessage().Locations["user"].Accuracy)
 		packetOut.AddField(constants.LocationSource, packetIn.GetUplinkMessage().Locations["user"].Source.String())
 	}
 
@@ -137,8 +133,34 @@ func AddNetworkMetadataFields(packetIn ttnpb.ApplicationUp, packetOut *types.Iot
 	if packetIn.GetLocationSolved() != nil {
 		packetOut.AddField(constants.Latitude, packetIn.GetLocationSolved().Location.Latitude)
 		packetOut.AddField(constants.Longitude, packetIn.GetLocationSolved().Location.Longitude)
-		packetOut.AddField(constants.Altitude, float64(packetIn.GetLocationSolved().Location.Altitude))
-		packetOut.AddField(constants.LocationAccuracy, float64(packetIn.GetLocationSolved().Location.Accuracy))
+		packetOut.AddField(constants.Altitude, packetIn.GetLocationSolved().Location.Altitude)
+		packetOut.AddField(constants.LocationAccuracy, packetIn.GetLocationSolved().Location.Accuracy)
 		packetOut.AddField(constants.LocationSource, packetIn.GetLocationSolved().Location.Source.String())
 	}
+}
+
+func AddParsedPayloadFields(packetIn ttnpb.ApplicationUp, packetOut *types.IotMessage) error {
+	// DecodedPayload is &Struct{Fields:map[string]*Value{},XXX_unrecognized:[],}.
+	// Convert to a more standard map[string]interface{}
+
+	// Marshal struct to json
+	marshaler := jsonpb.TTN()
+	decodedJson, err := marshaler.Marshal(packetIn.GetUplinkMessage().DecodedPayload)
+	if err != nil {
+		return err
+	}
+
+	// Unmarshal json to interface{}
+	var decodedInterface map[string]interface{}
+	err = json.Unmarshal(decodedJson, &decodedInterface)
+	if err != nil {
+		return err
+	}
+
+	// For each field in the decoded payload, add to IotMessage
+	for key, val := range decodedInterface {
+		packetOut.AddField(key, val)
+	}
+
+	return nil
 }

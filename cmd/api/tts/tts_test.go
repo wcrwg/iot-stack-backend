@@ -2,14 +2,13 @@ package tts
 
 import (
 	b64 "encoding/base64"
-	"encoding/json"
 	"github.com/golang/protobuf/proto"
 	"go.thethings.network/lorawan-stack/v3/pkg/jsonpb"
 	"go.thethings.network/lorawan-stack/v3/pkg/ttnpb"
 	"log"
 	"testing"
-	"ttnmapper-ingress-api/types"
-	"ttnmapper-ingress-api/utils"
+	"wcrwg-iot-ingress/pkg/types"
+	"wcrwg-iot-ingress/pkg/utils"
 )
 
 func TestDecodeV3(t *testing.T) {
@@ -143,35 +142,6 @@ func TestDecodeV3(t *testing.T) {
 			continue
 		}
 
-		var packetOut types.TtnMapperUplinkMessage
-		packetOut.NetworkId = types.NS_TTS_V3 + "://" +
-			packetIn.GetUplinkMessage().NetworkIds.TenantId + "@" +
-			utils.NetIdToString(packetIn.GetUplinkMessage().GetNetworkIds().NetId)
-
-		AddNetworkMetadataFields(packetIn, &packetOut)
-		//log.Println(utils.PrettyPrint(packetOut))
-
-		// Check all fields to see if parsing was correct
-
-		//if len(packetOut.Gateways) != 5 {
-		//	t.Error("Not all gateways were parsed")
-		//}
-
-		decodedJson, err := marshaler.Marshal(packetIn.GetUplinkMessage().DecodedPayload)
-		if err != nil {
-			t.Error(err.Error())
-		}
-		log.Printf("%+v", decodedJson)
-		var decodedInterface interface{}
-		err = json.Unmarshal(decodedJson, &decodedInterface)
-		if err != nil {
-			t.Error(err.Error())
-		}
-		log.Printf("%+v", decodedInterface)
-
-		utils.ParsePayloadFields(0, decodedInterface, &packetOut)
-		//log.Printf("%+v", packetOut)
-		log.Println(utils.PrettyPrint(packetOut))
 	}
 }
 
@@ -192,10 +162,15 @@ func TestTtsV3Pb(t *testing.T) {
 			t.Error(err.Error())
 		}
 
+		if packetIn.GetUplinkMessage().GetNetworkIds() == nil {
+			t.Error("Network IDs not set")
+			continue
+		}
+
 		//log.Printf("Uplink Message: %+v", packetIn)
 
-		var packetOut types.TtnMapperUplinkMessage
+		var packetOut types.IotMessage
 		AddNetworkMetadataFields(packetIn, &packetOut)
-		//log.Println(utils.PrettyPrint(packetOut))
+		log.Println(utils.PrettyPrint(packetOut))
 	}
 }

@@ -7,11 +7,16 @@ const (
 	NS_HELIUM = "NS_HELIUM"
 
 	NetworkId = "network_id"
-	AppId     = "app_id"
-	DevId     = "dev_id"
-	DevEui    = "dev_eui"
-	FPort     = "f_port"
-	FCnt      = "f_cnt"
+	ClusterId = "cluster_id"
+
+	GatewayId  = "gateway_id"
+	GatewayEui = "gateway_eui"
+
+	ApplicationId = "application_id"
+	DeviceId      = "device_id"
+	DeviceEui     = "device_eui"
+	FPort         = "f_port"
+	FCnt          = "f_cnt"
 
 	Frequency       = "frequency"
 	Modulation      = "modulation"
@@ -27,4 +32,10 @@ const (
 	LocationSource   = "location_source"
 
 	UserAgent = "user_agent"
+
+	ChannelIndex = "channel_index"
+	Rssi         = "rssi"
+	SignalRssi   = "signal_rssi"
+	Snr          = "snr"
+	AntennaIndex = "antenna_index"
 )

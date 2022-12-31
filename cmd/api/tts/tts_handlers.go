@@ -11,8 +11,6 @@ import (
 	"math/rand"
 	"net/http"
 	"strconv"
-	"wcrwg-iot-ingress/pkg/constants"
-	"wcrwg-iot-ingress/pkg/types"
 )
 
 /*
@@ -84,28 +82,37 @@ func (handlerContext *Context) PostV3Uplink(w http.ResponseWriter, r *http.Reque
 		//return // Do not return, as we can still use the metadata to update gateway last seen and contribute channels and signal stats
 	}
 
-	var packetOut types.IotMessage
-
-	// Add metadata fields
-	AddNetworkMetadataFields(packetIn, &packetOut)
-
-	// Add payload fields, and
-	// 3. If payload fields are available, try getting coordinates from there
-	if packetIn.GetUplinkMessage().DecodedPayload != nil {
-		if err := AddParsedPayloadFields(packetIn, &packetOut); err != nil {
-			response["success"] = false
-			response["message"] = err.Error()
-			log.Print("[" + i + "] " + err.Error())
-			return
-		}
+	if packetIn.GetUplinkMessage().GetNetworkIds() == nil {
+		response["success"] = false
+		response["message"] = "Network IDs not set"
+		log.Print("[" + i + "] Network IDs not set")
+		return
 	}
 
-	packetOut.AddField(constants.UserAgent, r.Header.Get("USER-AGENT"))
-
-	log.Printf("[%s] %+v", i, packetOut)
+	// 1. Sensor data
+	sensorMessage, err := UplinkToSensorMessage(packetIn)
+	if err != nil {
+		response["success"] = false
+		response["message"] = err.Error()
+		log.Print("[" + i + "] " + err.Error())
+		return
+	}
 
 	// Push this new packet into the stack
-	handlerContext.PublishChannel <- packetOut
+	handlerContext.PublishChannel <- sensorMessage
+
+	// 2. Gateway data
+	gatewayMessages, err := UplinkToGatewayMessage(packetIn)
+	if err != nil {
+		response["success"] = false
+		response["message"] = err.Error()
+		log.Print("[" + i + "] " + err.Error())
+		return
+	}
+
+	for _, gatewayMessage := range gatewayMessages {
+		handlerContext.PublishChannel <- gatewayMessage
+	}
 
 	w.WriteHeader(http.StatusAccepted)
 	response["success"] = true
