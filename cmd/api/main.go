@@ -112,7 +112,7 @@ func publishFromChannel() {
 	//var message map[string]interface{}
 	for {
 		message := <-publishChannel
-		log.Printf("Publishing message")
+		log.Printf("[Q] Publishing message")
 
 		data, err := json.Marshal(message)
 		if err != nil {

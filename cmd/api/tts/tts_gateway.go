@@ -3,6 +3,7 @@ package tts
 import (
 	"fmt"
 	"go.thethings.network/lorawan-stack/v3/pkg/ttnpb"
+	"log"
 	"strconv"
 	"time"
 	"wcrwg-iot-ingress/pkg/constants"
@@ -76,6 +77,7 @@ func AddGatewayMetadataFields(packetIn ttnpb.ApplicationUp, gatewayIn *ttnpb.RxM
 	// Tags change never per series
 
 	// The gateway's ID - unique per network
+	log.Printf("[TTS] %s", gatewayIn.GatewayIds.GatewayId)
 	gatewayOut.AddTag(constants.GatewayId, gatewayIn.GatewayIds.GatewayId)
 	if gatewayIn.GatewayIds.Eui != nil {
 		gatewayOut.AddTag(constants.GatewayEui, fmt.Sprintf("%016X", gatewayIn.GatewayIds.Eui))

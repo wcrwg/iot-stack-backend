@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"go.thethings.network/lorawan-stack/v3/pkg/jsonpb"
 	"go.thethings.network/lorawan-stack/v3/pkg/ttnpb"
+	"log"
 	"time"
 	"wcrwg-iot-ingress/pkg/constants"
 	"wcrwg-iot-ingress/pkg/types"
@@ -68,6 +69,7 @@ func AddNetworkMetadataFields(packetIn ttnpb.ApplicationUp, packetOut *types.Iot
 			utils.NetIdToString(packetIn.GetUplinkMessage().GetNetworkIds().NetId),
 	)
 
+	log.Printf("[TTS] %s - %s", packetIn.GetEndDeviceIds().ApplicationIds.ApplicationId, packetIn.GetEndDeviceIds().DeviceId)
 	packetOut.AddTag(constants.ApplicationId, packetIn.GetEndDeviceIds().ApplicationIds.ApplicationId)
 	packetOut.AddTag(constants.DeviceId, packetIn.GetEndDeviceIds().DeviceId)
 
