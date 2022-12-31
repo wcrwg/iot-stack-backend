@@ -1,0 +1,154 @@
+{
+  "Time": "2022-12-31T09:36:28.446971766+02:00",
+  "Measurement": "sensor",
+  "Tags": {
+    "application_id": "wcrwg-otto-io",
+    "device_eui": "3030303130373135",
+    "device_id": "eui-3030303130373135",
+    "network_id": "NS_TTS_V3://ttn@000013"
+  },
+  "Fields": {
+    "analog_2": 831,
+    "analog_4": 800,
+    "bandwidth": 125000,
+    "battery": 4.779,
+    "coding_rate": "4/5",
+    "digital_out_1": 0,
+    "f_cnt": 116,
+    "f_port": 1,
+    "frequency": 867900000,
+    "frm_payload": "CT8DIAMA6OavY6sS",
+    "message_type": "periodic",
+    "modulation": "LORA",
+    "spreading_factor": 7,
+    "timestamp": 1672472296
+  }
+}
+
+{
+  "Time": "2022-12-31T09:36:28.121842+02:00",
+  "Measurement": "gateway",
+  "Tags": {
+    "antenna_index": "0",
+    "application_id": "wcrwg-otto-io",
+    "cluster_id": "eu1",
+    "device_eui": "3030303130373135",
+    "device_id": "eui-3030303130373135",
+    "gateway_eui": "3135323533002400",
+    "gateway_id": "lnx-solutions-klnmnd-01",
+    "network_id": "NS_TTS_V3://ttn@000013"
+  },
+  "Fields": {
+    "altitude": 20,
+    "bandwidth": 125000,
+    "channel_index": 7,
+    "coding_rate": "4/5",
+    "f_cnt": 116,
+    "f_port": 1,
+    "frequency": 867900000,
+    "latitude": -34.339333,
+    "location_accuracy": 0,
+    "location_source": "SOURCE_REGISTRY",
+    "longitude": 19.034111,
+    "modulation": "LORA",
+    "rssi": -115,
+    "snr": 2.5,
+    "spreading_factor": 7
+  }
+}
+
+{
+  "Time": "2022-12-31T09:36:28.123778+02:00",
+  "Measurement": "gateway",
+  "Tags": {
+    "antenna_index": "0",
+    "application_id": "wcrwg-otto-io",
+    "cluster_id": "eu1",
+    "device_eui": "3030303130373135",
+    "device_id": "eui-3030303130373135",
+    "gateway_eui": "343632385C003700",
+    "gateway_id": "lnx-solutions-betbay-01",
+    "network_id": "NS_TTS_V3://ttn@000013"
+  },
+  "Fields": {
+    "altitude": 465,
+    "bandwidth": 125000,
+    "channel_index": 7,
+    "coding_rate": "4/5",
+    "f_cnt": 116,
+    "f_port": 1,
+    "frequency": 867900000,
+    "latitude": -34.35025,
+    "location_accuracy": 0,
+    "location_source": "SOURCE_REGISTRY",
+    "longitude": 18.961417,
+    "modulation": "LORA",
+    "rssi": -115,
+    "snr": -5,
+    "spreading_factor": 7
+  }
+}
+
+{
+  "Time": "2022-12-31T09:36:28.127535+02:00",
+  "Measurement": "gateway",
+  "Tags": {
+    "antenna_index": "0",
+    "application_id": "wcrwg-otto-io",
+    "cluster_id": "eu1",
+    "device_eui": "3030303130373135",
+    "device_id": "eui-3030303130373135",
+    "gateway_eui": "3133303746002A00",
+    "gateway_id": "lnx-solutions-jskop-01",
+    "network_id": "NS_TTS_V3://ttn@000013"
+  },
+  "Fields": {
+    "altitude": 1700,
+    "bandwidth": 125000,
+    "channel_index": 7,
+    "coding_rate": "4/5",
+    "f_cnt": 116,
+    "f_port": 1,
+    "frequency": 867900000,
+    "latitude": -33.97178,
+    "location_accuracy": 0,
+    "location_source": "SOURCE_REGISTRY",
+    "longitude": 19.50633,
+    "modulation": "LORA",
+    "rssi": -115,
+    "snr": -4.75,
+    "spreading_factor": 7
+  }
+}
+
+{
+  "Time": "1971-11-08T18:59:28.965485+02:00",
+  "Measurement": "gateway",
+  "Tags": {
+    "antenna_index": "0",
+    "application_id": "wcrwg-otto-io",
+    "cluster_id": "eu1",
+    "device_eui": "3030303130373135",
+    "device_id": "eui-3030303130373135",
+    "gateway_eui": "3436323825004700",
+    "gateway_id": "lnx-solutions-pbp-01",
+    "network_id": "NS_TTS_V3://ttn@000013"
+  },
+  "Fields": {
+    "altitude": 130,
+    "bandwidth": 125000,
+    "channel_index": 7,
+    "coding_rate": "4/5",
+    "f_cnt": 116,
+    "f_port": 1,
+    "frequency": 867900000,
+    "latitude": -34.35208487,
+    "location_accuracy": 0,
+    "location_source": "SOURCE_REGISTRY",
+    "longitude": 18.82273625,
+    "modulation": "LORA",
+    "rssi": -114,
+    "snr": -3.25,
+    "spreading_factor": 7
+  }
+}
