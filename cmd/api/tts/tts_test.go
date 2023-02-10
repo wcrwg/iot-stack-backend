@@ -119,6 +119,86 @@ func TestDecodeV3(t *testing.T) {
       }
     }
   }`,
+		`
+{
+    "@type": "type.googleapis.com/ttn.lorawan.v3.ApplicationUp",
+    "end_device_ids": {
+      "device_id": "eui-3030303130373332",
+      "application_ids": {
+        "application_id": "wcrwg-otto-io"
+      },
+      "dev_eui": "3030303130373332",
+      "join_eui": "70B3D57ED003E052",
+      "dev_addr": "260B6564"
+    },
+    "correlation_ids": [
+      "as:up:01GR35H53P5YZYNNHREZXCR60N",
+      "gs:conn:01GR1GXJ3SNMPQ6JTNCP3X9C5A",
+      "gs:up:host:01GR1GXJ9CE76JBYGJ30M14YRX",
+      "gs:uplink:01GR35H4X8KGMHKTS9NAD7FTQE",
+      "ns:uplink:01GR35H4X9Z2WNE05C5D29WF6P",
+      "rpc:/ttn.lorawan.v3.GsNs/HandleUplink:01GR35H4X8V45AX9Q2ANT59AAM",
+      "rpc:/ttn.lorawan.v3.NsAs/HandleUplink:01GR35H53PTV672BTFY4CW916V"
+    ],
+    "received_at": "2023-01-31T05:41:53.910284534Z",
+    "uplink_message": {
+      "session_key_id": "AYYF5fJaPYG8XyFn8znCLw==",
+      "f_port": 1,
+      "f_cnt": 15,
+      "frm_payload": "CUIDIgMARbDYY3IS",
+      "decoded_payload": {
+        "analog_2": 834,
+        "analog_4": 802,
+        "battery": 4.722,
+        "digital_out_1": 0,
+        "message_type": "periodic",
+        "timestamp": 1675145285
+      },
+      "rx_metadata": [
+        {
+          "gateway_ids": {
+            "gateway_id": "lnx-solutions-knkop-01",
+            "eui": "3436323826004400"
+          },
+          "time": "2022-05-17T12:11:37.926841Z",
+          "timestamp": 3236781044,
+          "rssi": -115,
+          "channel_rssi": -115,
+          "snr": -4,
+          "location": {
+            "latitude": -33.82608772160143,
+            "longitude": 18.606270281597975,
+            "altitude": 130,
+            "source": "SOURCE_REGISTRY"
+          },
+          "uplink_token": "CiQKIgoWbG54LXNvbHV0aW9ucy1rbmtvcC0wMRIINDYyOCYARAAQ9Le1hwwaDAih1OKeBhDOg+XPAiCg4rz5mbcN",
+          "channel_index": 4,
+          "received_at": "2023-01-31T05:41:53.618111981Z"
+        }
+      ],
+      "settings": {
+        "data_rate": {
+          "lora": {
+            "bandwidth": 125000,
+            "spreading_factor": 10,
+            "coding_rate": "4/5"
+          }
+        },
+        "frequency": "867300000",
+        "timestamp": 3236781044,
+        "time": "2022-05-17T12:11:37.926841Z"
+      },
+      "received_at": "2023-01-31T05:41:53.705098970Z",
+      "confirmed": true,
+      "consumed_airtime": "0.411648s",
+      "network_ids": {
+        "net_id": "000013",
+        "tenant_id": "ttn",
+        "cluster_id": "eu1",
+        "cluster_address": "eu1.cloud.thethings.network"
+      }
+    }
+  }`,
 	}
 
 	for _, postbody := range postbodies {
@@ -141,6 +221,20 @@ func TestDecodeV3(t *testing.T) {
 			t.Error("Network IDs not set")
 			continue
 		}
+
+		sensorMessage, err := UplinkToSensorMessage(packetIn)
+		if err != nil {
+			t.Fatalf(err.Error())
+		}
+
+		log.Println(utils.PrettyPrint(sensorMessage))
+
+		// 2. Gateway data
+		gatewayMessages, err := UplinkToGatewayMessage(packetIn)
+		if err != nil {
+			t.Fatalf(err.Error())
+		}
+		log.Println(utils.PrettyPrint(gatewayMessages))
 
 	}
 }
