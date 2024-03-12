@@ -82,7 +82,9 @@ loop:
 				point.AddField("latitude", "")
 				point.AddField("longitude", "")
 				err = writeApiBlocking.WritePoint(context.Background(), point)
-				log.Println("retry", err.Error())
+				if err != nil {
+					log.Println("retry", err.Error())
+				}
 			}
 		}
 	}
