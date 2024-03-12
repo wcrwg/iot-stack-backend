@@ -79,7 +79,7 @@ loop:
 			if err != nil {
 				log.Println("failed", err)
 				// workaround skip latitudes because this shard had them added as strings
-				point.AddField("latitude", string(""))
+				point.AddTag("retry", "true")
 				err = writeApiBlocking.WritePoint(context.Background(), point)
 				log.Println("retry", err.Error())
 			}
