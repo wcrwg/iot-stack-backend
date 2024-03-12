@@ -1,6 +1,7 @@
 package influxdb
 
 import (
+	"context"
 	"crypto/tls"
 	"github.com/influxdata/influxdb-client-go/v2"
 	"github.com/influxdata/influxdb-client-go/v2/api"
@@ -9,10 +10,11 @@ import (
 )
 
 var (
-	client   influxdb2.Client
-	queryAPI api.QueryAPI
-	writeApi api.WriteAPI
-	bucket   string
+	client           influxdb2.Client
+	queryAPI         api.QueryAPI
+	writeApiAsync    api.WriteAPI
+	writeApiBlocking api.WriteAPIBlocking
+	bucket           string
 
 	InfluxWritePointsChannel = make(chan *write.Point)
 	InfluxStopWriting        = make(chan struct{})
@@ -45,7 +47,8 @@ func (credentials *InfluxCredentials) InitInfluxdb() {
 	}
 
 	queryAPI = client.QueryAPI(credentials.Org)
-	writeApi = client.WriteAPI(credentials.Org, credentials.Bucket)
+	writeApiAsync = client.WriteAPI(credentials.Org, credentials.Bucket)
+	writeApiBlocking = client.WriteAPIBlocking(credentials.Org, credentials.Bucket)
 	bucket = credentials.Bucket
 
 	log.Println("Influxdb2 initialised")
@@ -53,7 +56,7 @@ func (credentials *InfluxCredentials) InitInfluxdb() {
 
 func InfluxWriteFromChannel() {
 	// Get errors channel
-	errorsCh := writeApi.Errors()
+	errorsCh := writeApiAsync.Errors()
 	// Create go proc for reading and logging errors
 	go func() {
 		for err := range errorsCh {
@@ -69,9 +72,11 @@ loop:
 			log.Println("Stopping influxdb write thread")
 			break loop // stop listening to messages
 		case point := <-InfluxWritePointsChannel:
-			//fmt.Print(".")
+			//log.Println("[Influx Write]", point.Time(), utils.PrettyPrint(point.TagList()), utils.PrettyPrint(point.FieldList()))
 			i++
-			writeApi.WritePoint(point)
+			writeApiAsync.WritePoint(point)
+			result := writeApiBlocking.WritePoint(context.Background(), point)
+			log.Println(result)
 		}
 	}
 
@@ -79,7 +84,7 @@ loop:
 
 	log.Println("Influxdb flush")
 	// Force all unwritten data to be sent
-	writeApi.Flush()
+	writeApiAsync.Flush()
 	log.Println("Influxdb close")
 	// Ensures background processes finishes
 	client.Close()
