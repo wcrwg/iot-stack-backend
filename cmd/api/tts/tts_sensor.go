@@ -161,7 +161,9 @@ func AddParsedPayloadFields(packetIn ttnpb.ApplicationUp, packetOut *types.IotMe
 
 	// For each field in the decoded payload, add to IotMessage
 	for key, val := range decodedInterface {
-		packetOut.AddField(key, val)
+		if val != nil {
+			packetOut.AddField(key, val)
+		}
 	}
 
 	return nil

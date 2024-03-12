@@ -74,9 +74,13 @@ loop:
 		case point := <-InfluxWritePointsChannel:
 			//log.Println("[Influx Write]", point.Time(), utils.PrettyPrint(point.TagList()), utils.PrettyPrint(point.FieldList()))
 			i++
-			writeApiAsync.WritePoint(point)
-			result := writeApiBlocking.WritePoint(context.Background(), point)
-			log.Println(result)
+			//writeApiAsync.WritePoint(point)
+			err := writeApiBlocking.WritePoint(context.Background(), point)
+			if err != nil {
+				log.Println(err)
+				// workaround skip latitudes because this shard had them added as strings
+				point.AddTag("latitude", "")
+			}
 		}
 	}
 
