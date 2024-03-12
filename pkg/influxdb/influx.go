@@ -84,6 +84,8 @@ loop:
 				err = writeApiBlocking.WritePoint(context.Background(), point)
 				if err != nil {
 					log.Println("retry", err.Error())
+				} else {
+					log.Println("retry success")
 				}
 			}
 		}
